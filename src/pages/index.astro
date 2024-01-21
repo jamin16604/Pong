@@ -20,11 +20,25 @@
 			canvas{
 				background-color: #111;
 			}
+			h1{
+				color: #fff;
+				font-size: 4rem;	
+				font-family:sans-serif;
+				bottom: 100px;
+				position: absolute;
+			}
+			#P1Score{
+				left: 35%;
+			}
+			#P2Score{
+				right: 35%;
+			}
 		</style>
 	</head>
 	<body>
 		<canvas id="canvas"></canvas>
-
+		<h1 id="P1Score">0</h1>
+		<h1 id="P2Score">0</h1>
 		<script>
 			const canvas = document.getElementById("canvas",) as HTMLCanvasElement;
 			const ctx = canvas.getContext("2d");
@@ -72,6 +86,7 @@
 				this.velocity = velocity;
 				this.width = width;
 				this.height = height;
+				this.score = 0;
 
 				this.update = function () {
 					if(keysPressed[KEY_UP]){
@@ -98,9 +113,32 @@
 				if(ball.pos.y + ball.radius >= canvas.height || ball.pos.y - ball.radius <= 0){
 					ball.velocity.y *= -1;
 				}
-				if(ball.pos.x + ball.radius >= canvas.width || ball.pos.x - ball.radius <=0){
-					ball.velocity.x *= -1;
+			}
+
+			function increaseScore(ball, paddleL, paddleR){
+				if(ball.pos.x <= -ball.radius){
+					paddleR.score += 1;
+					document.getElementById("P2Score").innerHTML = paddleR.score;
+					resetBall(ball);
 				}
+				if(ball.pos.x >= canvas.width + ball.radius){
+					ball.velocity.x *= -1;
+					paddleL.score +=1;
+					document.getElementById("P1Score").innerHTML = paddleL.score;
+					resetBall(ball);
+				}
+			}
+
+			function resetBall(ball){
+				if (ball.velocity.x > 0){
+					ball.pos.x = canvas.width - 150;
+				}
+				if(ball.velocity < 0){
+					ball.pos.x = 150;
+				}
+				ball.pos.y = (Math.random() * (canvas.height - 200)) + 100;
+				ball.velocity.x *=-1;
+				ball.velocity.y *=-1;
 			}
 
 			function paddleCollisionWithEdges(paddle){
@@ -120,6 +158,24 @@
 				} 
 			}
 
+			function player2CPU(ball, paddle){
+				if(ball.velocity <= 0){
+					return;
+				}
+				if( ball.pos.y> paddle.pos.y){
+					paddle.pos.y += paddle.velocity.y;
+					if(paddle.pos.y + paddle.height >= canvas.height ){
+						paddle.pos.y = canvas.height - paddle.height;
+					}
+				}
+				if(ball.pos.y < paddle.pos.y){
+					paddle.pos.y -= paddle.velocity.y;
+					if(paddle.pos.y <= 0){
+						paddle.pos.y = 0;
+					}
+				}
+			}
+
 			function gameUpdate() {
 				ball.update();
 				paddleLeft.update();
@@ -127,6 +183,10 @@
 				paddleCollisionWithEdges(paddleLeft);
 				paddleCollisionWithEdges(paddleRight);
 				paddleBallCollision(ball, paddleLeft);
+				//player2CPU(ball, paddleLeft);
+				player2CPU(ball, paddleRight);
+				paddleBallCollision(ball, paddleRight);
+				increaseScore(ball, paddleLeft, paddleRight);
 			}
 			function gameDraw() {
 				ball.draw();
