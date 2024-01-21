@@ -17,6 +17,9 @@
 			body {
 				overflow: hidden;
 			}
+			canvas{
+				background-color: #111;
+			}
 		</style>
 	</head>
 	<body>
@@ -45,15 +48,28 @@
 				};
 
 				this.draw = function () {
+					ctx.fillStyle = "#44D62C";
+					ctx.strokeStyle = "#44D62C";
 					ctx.beginPath();
 					ctx.arc(this.pos.x,this.pos.y,this.radius,0,2 * Math.PI,);
+					ctx.fill();
 					ctx.stroke();
 				};
 			}
-			const ball = new Ball(vec2(200, 200), vec2(2, 2), 20);
+			const ball = new Ball(vec2(200, 200), vec2(10, 10), 20);
+			/* Ensures ball bounces off edges of canvas to prevent it moving outside visible area*/
+			function ballCollisionWithEdges(){
+				if(ball.pos.y + ball.radius >= canvas.height || ball.pos.y - ball.radius <= 0){
+					ball.velocity.y *= -1;
+				}
+				if(ball.pos.x + ball.radius >= canvas.width || ball.pos.x - ball.radius <=0){
+					ball.velocity.x *= -1;
+				}
+			}
 
 			function gameUpdate() {
 				ball.update();
+				ballCollisionWithEdges();
 			}
 			function gameDraw() {
 				ball.draw();
